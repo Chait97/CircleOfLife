@@ -2,13 +2,7 @@
  * @author Chaitanya Bhagwat
  */
 
-// The world dimensions
-let world = {
-	width: 2540,
-	height: 1440,
-};
-
-world.center = new PointRect( world.width/2, world.height/2 );
+ let world;
 
 function addEventListeners(mouseMove) {
 	window.addEventListener('resize', onWindowResize, false);
@@ -21,8 +15,13 @@ function addEventListeners(mouseMove) {
 }
 
 function onWindowResize() {
-	let offsetWidth = 10;
-	let containerWidth = world.width + offsetWidth + 20;
+	// The world dimensions
+	world = {
+		width: window.innerWidth,
+		height: window.innerHeight,
+	};
+
+	world.center = new PointRect( world.width/2, world.height/2 );
 
 	// Resize the canvas
 	canvas.width = world.width;
@@ -101,34 +100,17 @@ function initialize() {
 	blob.init();
 	blob.render();
 
+	let nPoints = 50
 
-	cell = new Cell(100, new PointRect(200,1000), "#FFFFFF");
-	cell.canvas = canvas;
-	cell.render();
-	cell = new Cell(50, new PointRect(200,1000), "#FF33DD");
-	cell.canvas = canvas;
-	cell.render();
-	cell = new Cell(70, new PointRect(200,1000), "#9905DD");
-	cell.canvas = canvas;
-	cell.render();
-	cell = new Cell(100, new PointRect(200,1000), "#FFFFFF");
-	cell.canvas = canvas;
-	cell.render();
-	cell = new Cell(50, new PointRect(200,1000), "#FF33DD");
-	cell.canvas = canvas;
-	cell.render();
-	cell = new Cell(70, new PointRect(200,1000), "#9905DD");
-	cell.canvas = canvas;
-	cell.render();
-	cell = new Cell(100, new PointRect(200,1000), "#FFFFFF");
-	cell.canvas = canvas;
-	cell.render();
-	cell = new Cell(50, new PointRect(200,1000), "#FF33DD");
-	cell.canvas = canvas;
-	cell.render();
-	cell = new Cell(70, new PointRect(200,1000), "#9905DD");
-	cell.canvas = canvas;
-	cell.render();
+	for(let i = 0; i< nPoints; i += 1){
+		cell = new Cell(Math.random()*100);
+		cell.position = world.center.clonePosition().addRandom(200);
+		cell.colour = 'hsl(' + 360 * Math.random() + ', 50%, 50%)';
+		cell.velocity = new PointRect().addRandom(4);
+		cell.acceleration = 0.5;
+		cell.canvas = canvas;
+		cell.render();
+	}
 }
 
 initialize();
