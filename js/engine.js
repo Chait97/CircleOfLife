@@ -4,94 +4,101 @@
 
 // The world dimensions
 let world = {
-	width: 600,
-	height: 500,
-	center: new Point( 300, 250 )
+	width: 2540,
+	height: 1440,
 };
 
-// Mouse input tracking
-let mouse = {
-	// The current position
-	x: 0,
-	y: 0,
+world.center = new Point( world.width/2, world.height/2 )
 
-	// The position previous to the current
-	previousX: 0,
-	previousY: 0,
+function addEventListeners(mouseMove) {
+	window.addEventListener('resize', onWindowResize, false);
+	window.addEventListener('pointermove', mouseMove);
 
-	// The velocity, based on the difference between
-	// the current and next positions
-	velocityX: 0,
-	velocityY: 0,
 
-	// Flags if the mouse is currently pressed down
-	down: false,
+	// for( var i = 0, len = sequencerInputElements.length; i < len; i++ ) {
+	// 	sequencerInputElements[i].addEventListener( 'click', onSequencerInputElementClick, false );
+	// }
+}
 
-	// When dragging the action is defined by the first nodes
-	// reaction (activate/deactivate)
-	action: null,
+function onWindowResize() {
+	let offsetWidth = 10;
+	let containerWidth = world.width + offsetWidth + 20;
 
-	// A list of node ID's for which action should not be
-	// taken until the next time the mouse is pressed down
-	exclude: []
-
-};
+	// Resize the canvas
+	canvas.width = world.width;
+	canvas.height = world.height;
+}
 
 
 /**
  *
  */
 function initialize() {
-	// Run selectors and cache element references
-	canvas = document.querySelector( 'canvas' );
+	canvas = document.createElement('canvas');
+	canvas.setAttribute('touch-action', 'none');
 
-	if ( canvas && canvas.getContext ) {
-		context = canvas.getContext('2d');
-		context.globalCompositeOperation = 'lighter';
+	document.body.appendChild(canvas);
 
-		addEventListeners();
+	// Force an initial layout
+	onWindowResize();
 
-		// Force an initial layout
-		onWindowResize();
+	let blob = new Blob;
+	blob.numPoints = 20;
 
-		setup();
-		load();
-		update();
+	let oldMousePoint = { x: 0, y: 0};
+	let hover = false;
+	let mouseMove = function(e) {
+
+		let pos = blob.center;
+		let diff = { x: e.clientX - pos.x, y: e.clientY - pos.y };
+		let dist = Math.sqrt((diff.x * diff.x) + (diff.y * diff.y));
+		let angle = null;
+
+		blob.mousePos = { x: pos.x - e.clientX, y: pos.y - e.clientY };
+
+		if(dist < blob.radius && hover === false) {
+			let vector = { x: e.clientX - pos.x, y: e.clientY - pos.y };
+			angle = Math.atan2(vector.y, vector.x);
+			hover = true;
+			// blob.color = '#77FF00';
+		} else if(dist > blob.radius && hover === true){
+			let vector = { x: e.clientX - pos.x, y: e.clientY - pos.y };
+			angle = Math.atan2(vector.y, vector.x);
+			hover = false;
+			blob.color = null;
+		}
+
+		if(typeof angle == 'number') {
+
+			let nearestPoint = null;
+			let distanceFromPoint = 100;
+
+			blob.points.forEach((point)=> {
+				if(Math.abs(angle - point.azimuth) < distanceFromPoint) {
+					// console.log(point.azimuth, angle, distanceFromPoint);
+					nearestPoint = point;
+					distanceFromPoint = Math.abs(angle - point.azimuth);
+				}
+
+			});
+
+			if(nearestPoint) {
+				let strength = { x: oldMousePoint.x - e.clientX, y: oldMousePoint.y - e.clientY };
+				strength = Math.sqrt((strength.x * strength.x) + (strength.y * strength.y)) * 10;
+				if(strength > 100) strength = 100;
+				nearestPoint.acceleration = strength / 100 * (hover ? -1 : 1);
+			}
+		}
+
+		oldMousePoint.x = e.clientX;
+		oldMousePoint.y = e.clientY;
 	}
-	else {
-		alert( 'Doesn\'t seem like your browser supports the HTML5 canvas element :(' );
-	}
 
+	addEventListeners(mouseMove);
+
+	blob.canvas = canvas;
+	blob.init();
+	blob.render();
 }
 
-function addEventListeners() {
-	resetButton.addEventListener('click', onResetButtonClicked, false);
-	saveButton.addEventListener('click', onSaveButtonClicked, false);
-	sequencerAddButton.addEventListener('click', onSequencerAddButtonClick, false);
-
-	canvas.addEventListener('mousedown', onCanvasMouseDown, false);
-	document.addEventListener('mousemove', onDocumentMouseMove, false);
-	document.addEventListener('mouseup', onDocumentMouseUp, false);
-	canvas.addEventListener('touchstart', onCanvasTouchStart, false);
-	canvas.addEventListener('touchmove', onCanvasTouchMove, false);
-	canvas.addEventListener('touchend', onCanvasTouchEnd, false);
-	window.addEventListener('resize', onWindowResize, false);
-
-	for( var i = 0, len = sequencerInputElements.length; i < len; i++ ) {
-		sequencerInputElements[i].addEventListener( 'click', onSequencerInputElementClick, false );
-	}
-}
-
-function onWindowResize() {
-	var containerWidth = world.width + sidebar.offsetWidth + 20;
-
-	// Resize the container
-	container.style.width = containerWidth + 'px';
-	container.style.height = world.height + 'px';
-	container.style.left = ( window.innerWidth - world.width ) / 2 + 'px';
-	container.style.top = ( window.innerHeight - world.height ) / 2 + 'px';
-
-	// Resize the canvas
-	canvas.width = world.width;
-	canvas.height = world.height;
-}
+initialize();
