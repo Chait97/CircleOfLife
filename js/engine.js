@@ -8,7 +8,7 @@ let world = {
 	height: 1440,
 };
 
-world.center = new Point( world.width/2, world.height/2 )
+world.center = new PointRect( world.width/2, world.height/2 );
 
 function addEventListeners(mouseMove) {
 	window.addEventListener('resize', onWindowResize, false);
@@ -99,6 +99,11 @@ function initialize() {
 	blob.canvas = canvas;
 	blob.init();
 	blob.render();
+
+
+	cell = new Cell(100, new PointRect(200,1000));
+	cell.canvas = canvas;
+	cell.render();
 }
 
 initialize();

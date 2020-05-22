@@ -15,29 +15,6 @@ var Capabilities = {
 	}
 };
 
-// /**
-//  * Defines a 2D position.
-//  */
-// function Point( x, y ) {
-// 	this.x = x || 0;
-// 	this.y = y || 0;
-// }
-//
-// Point.prototype.distanceTo = function( x, y ) {
-// 	var dx = x-this.x;
-// 	var dy = y-this.y;
-// 	return Math.sqrt(dx*dx + dy*dy);
-// };
-//
-// Point.prototype.clonePosition = function() {
-// 	return { x: this.x, y: this.y };
-// };
-//
-// Point.prototype.interpolate = function( x, y, amp ) {
-// 	this.x += ( x - this.x ) * amp;
-// 	this.y += ( y - this.y ) * amp;
-// };
-//
 /**
  * Defines of a rectangular region.
  */

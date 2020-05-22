@@ -214,25 +214,59 @@ class Point {
   }
 }
 
+
+/**
+ * Defines a 2D position.
+ */
+class PointRect {
+    constructor( x, y ) {
+    	this.x = x || 0;
+    	this.y = y || 0;
+    };
+
+    distanceTo( x, y ) {
+    	var dx = x-this.x;
+    	var dy = y-this.y;
+    	return Math.sqrt(dx*dx + dy*dy);
+    };
+
+    clonePosition() {
+    	return { x: this.x, y: this.y };
+    };
+
+    interpolate( x, y, amp ) {
+    	this.x += ( x - this.x ) * amp;
+    	this.y += ( y - this.y ) * amp;
+    };
+}
+
 class Cell {
-  constructor(size, position) {
-  };
+    constructor(size, position) {
+        this.size = size;
+        this.position = position;
+    };
 
-  render() {
-    let canvas = this.canvas;
-    let ctx = this.ctx;
-
-  set canvas(value) {
-    if(value instanceof HTMLElement && value.tagName.toLowerCase() === 'canvas') {
-      this._canvas = canvas;
-      this.ctx = this._canvas.getContext('2d');
+    set canvas(value) {
+        if(value instanceof HTMLElement && value.tagName.toLowerCase() === 'canvas') {
+            this._canvas = canvas;
+            this.ctx = this._canvas.getContext('2d');
+        }
     }
-  }
-  get canvas() {
-    return this._canvas;
-  }
 
-  render()
+    get canvas() {
+        return this._canvas;
+    }
 
+    render() {
+        let canvas = this.canvas;
+        let ctx = this.ctx;
+
+        ctx.beginPath();
+        ctx.arc(this.position.x, this.position.y, this.size, 0, Math.PI*2);
+        ctx.fillStyle = "#0095DD";
+        ctx.fill();
+        ctx.closePath();
+        requestAnimationFrame(this.render.bind(this));
+    }
 
 }
