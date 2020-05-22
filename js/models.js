@@ -241,9 +241,10 @@ class PointRect {
 }
 
 class Cell {
-    constructor(size, position) {
+    constructor(size, position, colour) {
         this.size = size;
         this.position = position;
+        this.colour = colour;
     };
 
     set canvas(value) {
@@ -257,13 +258,37 @@ class Cell {
         return this._canvas;
     }
 
+    wander(amp){
+        let change = new PointRect((-1 + 2 * Math.random())* amp, (-1 + 2 * Math.random())* amp)
+        this.detectBounce(change)
+        this.position.interpolate(this.position.x + change.x, this.position.y + change.y, 1);
+    }
+
+    detectBounce(change){
+        let x = this.position.x
+        let y = this.position.y
+        let canvas = this.canvas
+
+        if(x + change.x > canvas.width-this.size || x + change.x < this.size) {
+            console.log("Bounce!");
+            change.x = -change.x;
+        }
+        if(y + change.y > canvas.height-this.size || y + change.y < this.size) {
+            console.log("Bounce!");
+            change.y = -change.y;
+        }
+    }
+
     render() {
         let canvas = this.canvas;
         let ctx = this.ctx;
 
+        // ctx.clearRect(0, 0, canvas.width, canvas.height);
+        if(Math.random() > 0.8)
+            this.wander(1000);
         ctx.beginPath();
         ctx.arc(this.position.x, this.position.y, this.size, 0, Math.PI*2);
-        ctx.fillStyle = "#0095DD";
+        ctx.fillStyle = this.colour;
         ctx.fill();
         ctx.closePath();
         requestAnimationFrame(this.render.bind(this));

@@ -44,6 +44,7 @@ function initialize() {
 
 	let blob = new Blob;
 	blob.numPoints = 20;
+	blob.radius = 500;
 
 	let oldMousePoint = { x: 0, y: 0};
 	let hover = false;
@@ -101,7 +102,31 @@ function initialize() {
 	blob.render();
 
 
-	cell = new Cell(100, new PointRect(200,1000));
+	cell = new Cell(100, new PointRect(200,1000), "#FFFFFF");
+	cell.canvas = canvas;
+	cell.render();
+	cell = new Cell(50, new PointRect(200,1000), "#FF33DD");
+	cell.canvas = canvas;
+	cell.render();
+	cell = new Cell(70, new PointRect(200,1000), "#9905DD");
+	cell.canvas = canvas;
+	cell.render();
+	cell = new Cell(100, new PointRect(200,1000), "#FFFFFF");
+	cell.canvas = canvas;
+	cell.render();
+	cell = new Cell(50, new PointRect(200,1000), "#FF33DD");
+	cell.canvas = canvas;
+	cell.render();
+	cell = new Cell(70, new PointRect(200,1000), "#9905DD");
+	cell.canvas = canvas;
+	cell.render();
+	cell = new Cell(100, new PointRect(200,1000), "#FFFFFF");
+	cell.canvas = canvas;
+	cell.render();
+	cell = new Cell(50, new PointRect(200,1000), "#FF33DD");
+	cell.canvas = canvas;
+	cell.render();
+	cell = new Cell(70, new PointRect(200,1000), "#9905DD");
 	cell.canvas = canvas;
 	cell.render();
 }
