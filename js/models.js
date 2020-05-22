@@ -231,19 +231,41 @@ class PointRect {
     };
 
     clonePosition() {
-    	return { x: this.x, y: this.y };
+    	return new PointRect(this.x, this.y);
     };
 
     interpolate( x, y, amp ) {
     	this.x += ( x - this.x ) * amp;
     	this.y += ( y - this.y ) * amp;
     };
+    addRandom(amp){
+        this.x += amp * (-1 + 2*Math.random());
+        this.y += amp * (-1 + 2*Math.random());
+        return this;
+    };
+    add(point){
+        this.x += point.x;
+        this.y += point.y;
+    };
+    reverse(){
+        this.x = -this.x;
+        this.y = - this.y;
+    }
+    reverseY(){
+        this.y = - this.y;
+    }
+    reverseX(){
+        this.x = -this.x;
+    }
+    scale(amp){
+        this.x *= amp;
+        this.y *= amp;
+    }
 }
 
 class Cell {
-    constructor(size, position) {
+    constructor(size) {
         this.size = size;
-        this.position = position;
     };
 
     set canvas(value) {
@@ -257,13 +279,38 @@ class Cell {
         return this._canvas;
     }
 
+    wander(amp){
+        let change = new PointRect(this.velocity.x, this.velocity.y)
+        this.detectBounce(change)
+        this.position.interpolate(this.position.x + change.x, this.position.y + change.y, 1);
+        this.velocity.addRandom(this.acceleration).scale(0.99);
+    }
+
+
+    detectBounce(change){
+        let x = this.position.x
+        let y = this.position.y
+        let canvas = this.canvas
+
+        if(x + change.x > canvas.width-this.size || x + change.x < this.size) {
+            change.x = -change.x;
+            this.velocity.reverseX()
+        }
+        if(y + change.y > canvas.height-this.size || y + change.y < this.size) {
+            change.y = -change.y;
+            this.velocity.reverseY();
+        }
+    }
+
     render() {
         let canvas = this.canvas;
         let ctx = this.ctx;
 
+        // ctx.clearRect(0, 0, canvas.width, canvas.height);
+        this.wander(1000);
         ctx.beginPath();
         ctx.arc(this.position.x, this.position.y, this.size, 0, Math.PI*2);
-        ctx.fillStyle = "#0095DD";
+        ctx.fillStyle = this.colour;
         ctx.fill();
         ctx.closePath();
         requestAnimationFrame(this.render.bind(this));
