@@ -2,8 +2,7 @@
  * @author Chaitanya Bhagwat
  */
 
- let world;
-
+let world;
 function addEventListeners(mouseMove) {
 	window.addEventListener('resize', onWindowResize, false);
 	window.addEventListener('pointermove', mouseMove);
@@ -21,13 +20,12 @@ function onWindowResize() {
 		height: window.innerHeight,
 	};
 
-	world.center = new PointRect( world.width/2, world.height/2 );
+	world.center = new PointRect( Math.round(world.width/2), Math.round(world.height/2) );
 
 	// Resize the canvas
 	canvas.width = world.width;
 	canvas.height = world.height;
 }
-
 
 /**
  *
@@ -42,6 +40,7 @@ function initialize() {
 	onWindowResize();
 
 	let blob = new Blob;
+
 	blob.numPoints = 20;
 	blob.radius = 500;
 
@@ -98,19 +97,31 @@ function initialize() {
 
 	blob.canvas = canvas;
 	blob.init();
-	blob.render();
 
-	let nPoints = 50
+	let nPoints = 100
 
 	for(let i = 0; i< nPoints; i += 1){
-		cell = new Cell(Math.random()*100);
-		cell.position = world.center.clonePosition().addRandom(200);
+		cell = new TinyCell(randomInt(100) + 10, world.center.clonePosition().addRandom(200));
 		cell.colour = 'hsl(' + 360 * Math.random() + ', 50%, 50%)';
 		cell.velocity = new PointRect().addRandom(4);
 		cell.acceleration = 0.5;
 		cell.canvas = canvas;
-		cell.render();
 	}
+
+	let ctx = canvas.getContext('2d');
+
+	let renderFrame = function(){
+		ctx.clearRect(0,0,canvas.width,canvas.height);
+		blob.render()
+		for(let [c_Id, cell] of Cell.cellMap){
+			cell.render()
+		}
+		Cell.computeDistances();
+		requestAnimationFrame(renderFrame);
+	}
+	return renderFrame;
 }
 
-initialize();
+
+renderFn = initialize();
+renderFn();

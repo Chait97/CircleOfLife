@@ -1,6 +1,10 @@
 /**
  *
  */
+ function randomInt(max) {
+  	return Math.floor(Math.random() * Math.floor(max));
+}
+
 var Capabilities = {
 	isOnline: function() {
 		return navigator.onLine;
