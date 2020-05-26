@@ -6,8 +6,11 @@ export default class TinyCell extends SimObject{
     acceleration: any;
     private _velocity: any;
     speed: any;
+    choice: string;
     constructor(size: number, position: Point2D) {
         super(size, position)
+        let txt = ["BOOM!", "POW!", "BANG!", "AAAARGHH!", "YAY!", "ZOINK!"]
+        this.choice = txt[Math.floor(Math.random() * txt.length)];
     };
 
     set velocity(v){
@@ -24,6 +27,21 @@ export default class TinyCell extends SimObject{
         this.detectBounce(change)
         this.position.interpolate(this.position.x + change.x, this.position.y + change.y, 1);
         this.velocity.addRandomDirection(this.acceleration);
+    }
+
+    onCollide(){
+        if(!this.isColliding){     // make sure cell wasn't already in a colliding state prevously
+            this._velocity.reverse();
+            this.isColliding = true;
+            this._velocity.scale(3);
+        }
+    }
+
+    offCollide(){
+        if(this.isColliding){        // make sure it wasn't colliding before
+            this._velocity.scale(1/3);
+            this.isColliding = false;
+        }
     }
 
     detectBounce(change: Point2D){
@@ -48,14 +66,16 @@ export default class TinyCell extends SimObject{
         this.wander();
         ctx.beginPath();
         ctx.arc(this.position.x, this.position.y, this.size, 0, Math.PI*2);
-        ctx.fillStyle = this.isColliding?'#aa6060':this.colour;
+        ctx.fillStyle = this.colour;
         ctx.fill();
         ctx.closePath();
 
-        ctx.font = "30px Monospace";
-        ctx.fillStyle = "#AAAAAA";
-        ctx.textAlign = "center";
-        ctx.fillText(this.simObjId, this.position.x, this.position.y);
+        if(this.isColliding){
+            ctx.font = "25px Monospace";
+            ctx.fillStyle = "#AAAAAA";
+            ctx.textAlign = "center";
+            ctx.fillText(this.choice, this.position.x, this.position.y);
+        }
     }
 
 }

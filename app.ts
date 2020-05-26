@@ -18,8 +18,8 @@ class World {
         this.canvas = document.createElement('canvas');
         this.canvas.setAttribute('touch-action', 'none');
         document.body.appendChild(this.canvas);
-        this.dimension = new Point2D;
-        this.center = new Point2D;
+        this.dimension = new Point2D(window.innerWidth, window.innerHeight);
+        this.center = new Point2D();
         // Force an initial layout
         this.onWindowResize();
         this.staticAssests = [];
@@ -106,17 +106,17 @@ class World {
 
 let world = new World;
 
-let nPoints = 100;
+let nPoints = 50;
 for (let i = 0; i < nPoints; i += 1) {
-    let cell = new TinyCell(randomInt(30) + 10, world.center.clone().addRandom(200));
+    let cell = new TinyCell(randomInt(50) + 10, world.center.clone().addRandom(300));
     cell.colour = 'hsl(' + 360 * Math.random() + ', 50%, 50%)';
-    cell.velocity = (new Point2D).addRandom(10);
-    cell.acceleration = 1;
+    cell.velocity = (new Point2D).addRandom(2);
+    cell.acceleration = 0.5;
     cell.canvas = world.canvas;
 }
 
 let blob = new Blob;
 blob.numPoints = 20;
-blob.radius = 500;
+blob.radius = 300;
 world.addBlob(blob);
 world.render();

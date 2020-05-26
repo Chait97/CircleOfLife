@@ -49,6 +49,12 @@ import Point2D from "./Point2D";
                 continue;
             }
 
+            let distancesToA:Map<number,number>;
+            if(this.distanceMap.has(simObj_i))
+                distancesToA = this.distanceMap.get(simObj_i)
+            else
+                distancesToA = new Map()
+
             // if A isn't already in a collided state,
             // check with every other simObj [B]
             for (let simObj_j = simObj_i + 1; simObj_j < simObjIds.length; simObj_j += 1){
@@ -61,21 +67,23 @@ import Point2D from "./Point2D";
                     b.onCollide();
                     collisions.add(a.simObjId);
                     collisions.add(b.simObjId);
-                    this.distanceMap.set([simObj_i, simObj_j], -1);
                     // since A has collided with B, we don't care what else it's
                     // colliding with in this update
+                    distancesToA.set(simObj_j, -1);
                     break;
                 }
                 // if A and B haven't collided then they have some distance > 0
                 if(simObj_i === undefined ||  simObj_j === undefined ||  dist === undefined)
-                    console.log(this.distanceMap,simObj_i,simObj_j,dist)
-                this.distanceMap.set([simObj_i, simObj_j], dist)
+                    console.log(this.distanceMap, simObj_i, simObj_j, dist)
+                distancesToA.set(simObj_j, dist);
             }
             // if no collision has occurred between A and all other possible simObjs,
             // it means it has not collided in this update;
             if (!collisions.has(a.simObjId)){
                 a.offCollide();
             }
+
+            this.distanceMap.set(simObj_i, distancesToA);
         }
     }
 
