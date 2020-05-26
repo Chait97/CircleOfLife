@@ -1,6 +1,17 @@
 # CircleOfLife
 Inspired by Conway's Game of Life and Max Cooper's Order from Chaos
 
+# How to build
+### Install yarn
+On MacOS `brew install yarn`
+On Ubuntu `sudo apt install yarn`
+
+### Install dependencies for this project
+`yarn install`
+
+### Build the project
+`yarn build` will start a running process which will watch the source files are rebuild when it detects any change
+Open `<path-to-project>/dist/index.html` to run
 
 # The Basics
 ### Overview
