@@ -4,13 +4,14 @@
  export default class Point2D {
     _direction: Unit;
     _magnitude: number;
-    y: number;
-    x: number;
-    constructor(x =0 , y = 0 ) {
+    y: number = 0;
+    x: number = 0;
+    constructor(x = 0 , y = 0 ) {
     	this.x = x;
     	this.y = y;
         this._magnitude = Math.sqrt(this.x*this.x + this.y*this.y);
         this._direction = new Unit(x,y);
+        // console.log(this, x, y)
     };
 
     get magnitude(){
@@ -39,12 +40,15 @@
     }
 
     distanceTo( c?:Point2D) {
+        if(isNaN(this.x) || isNaN(this.y))
+            console.log("Nans at ->> distanceTo()");
         if(c){
             var dx = c.x-this.x;
             var dy = c.y-this.y;
             return Math.sqrt(dx*dx + dy*dy);
         } else
-            return Math.sqrt(this.x*this.x + this.y*this.y);
+        // distance to (0, 0)
+            return this._magnitude;
     };
 
     clone() {
@@ -56,6 +60,8 @@
     	this.y += ( y - this.y ) * amp;
         this.updateMagnitude();
         this.updateDirection();
+        if(isNaN(this.x) || isNaN(this.y))
+            console.log("Nans at ->> interpolate()");
         return this;
     };
 
@@ -101,16 +107,20 @@
         return this;
     }
 
-    addRandomDirection(amp){
+    addRandomDirection(amp:number){
+        if(amp === 0)
+            return this
         let mag = this.magnitude;
         this.addRandom(amp);
         this.magnitude = mag;
         return this;
     }
 
-    updateCoordinates(x, y){
-        this.x = x;
-        this.y = y;
+    updateCoordinates(x: number | undefined, y?: number | undefined){
+        if(x)
+            this.x = x;
+        if(y)
+            this.y = y;
         this.updateDirection();
         this.updateMagnitude();
         return this;
@@ -136,15 +146,25 @@
 class Unit {
     x: number;
     y: number;
-    constructor(x: number, y: number){
+
+    constructor(x = 0, y: number = 0){
         this.update(x,y)
     }
+
     update(x: number, y: number){
-        let factor = Math.sqrt(x*x + y*y)
-        this.x = x/factor;
-        this.y = y/factor;
+        if(x===0 && y === 0){
+            this.x = 0
+            this.y = 0
+        }
+        else {
+            let factor = Math.sqrt(x*x + y*y)
+            this.x = x/factor;
+            this.y = y/factor;
+        }
     }
-    from(c){
+
+
+    from(c:Point2D){
         this.update(c.x, c.y)
         return this;
     }

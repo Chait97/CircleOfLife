@@ -1,25 +1,22 @@
-import SimObject from "./SimObject";
+import SimObject, { renderable } from "./SimObject";
 import Point2D from "./Point2D";
+import { AudioVisual } from "./AudioChannel";
 
-export default class TinyCell extends SimObject{
-    colour: any;
-    acceleration: any;
-    private _velocity: any;
-    speed: any;
-    choice: string;
+export default class TinyCell extends SimObject implements AudioVisual, renderable{
+    colour: string = "blue";
+    acceleration!: number;
+
     constructor(size: number, position: Point2D) {
         super(size, position)
-        let txt = ["BOOM!", "POW!", "BANG!", "AAAARGHH!", "YAY!", "ZOINK!"]
-        this.choice = txt[Math.floor(Math.random() * txt.length)];
-    };
-
-    set velocity(v){
-        this._velocity = v;
-        this.speed = v.magnitude;
     }
 
-    get velocity(){
-        return this._velocity;
+    beatResponse(){
+        let originalSize = this.size
+        let myVar = setInterval(() => this.size *= 0.95, 20);
+        setTimeout(() => {
+            clearTimeout(myVar)
+            this.size = originalSize
+        }, 200);
     }
 
     wander(){
@@ -29,22 +26,38 @@ export default class TinyCell extends SimObject{
         this.velocity.addRandomDirection(this.acceleration);
     }
 
-    onCollide(){
-        if(!this.isColliding){     // make sure cell wasn't already in a colliding state prevously
-            this._velocity.reverse();
-            this.isColliding = true;
-            this._velocity.scale(3);
-        }
-    }
+    onCollide(that:SimObject):void{
 
-    offCollide(){
-        if(this.isColliding){        // make sure it wasn't colliding before
-            this._velocity.scale(1/3);
-            this.isColliding = false;
+        // IMPORTANT! : Make sure this function is commutative
+        // i.e. running a.onCollide(b) should produce the same result as b.onCollide(a)
+        if(!this.isColliding && !that.isColliding){     // make sure the cells weren't already in a colliding state prevously
+            let m_AB = this.mass + that.mass
+
+            let v = [
+                {Ai: this.velocity.x, Bi: that.velocity.x, Af: 0, Bf: 0},   // x velocities of A and B
+                {Ai: this.velocity.y, Bi: that.velocity.y, Af: 0, Bf: 0}    // y velocities of A and B
+            ]
+
+            for (let v_ of v){
+                v_.Af = v_.Ai * (this.mass - that.mass) / m_AB
+                + 2 * v_.Bi * that.mass / m_AB
+                v_.Bf = v_.Bi * (that.mass - that.mass)  / m_AB
+                + 2 * v_.Ai * this.mass / m_AB
+            }
+
+            if(isNaN(this.position.x) || isNaN(this.position.y))
+                console.log("Nans at ->> onCollide()");
+
+            this.velocity.updateCoordinates(v[0].Af, v[1].Af)
+            that.velocity.updateCoordinates(v[0].Bf, v[1].Bf)
+
+            super.onCollide(that);
         }
     }
 
     detectBounce(change: Point2D){
+        if(isNaN(this.position.x) || isNaN(this.position.y))
+            console.log("Nans at ->> detectBounce()");
         let x = this.position.x;
         let y = this.position.y;
         let canvas = this.canvas;
@@ -61,21 +74,15 @@ export default class TinyCell extends SimObject{
 
     render() {
         let ctx = this.ctx;
+        if(isNaN(this.position.x) || isNaN(this.position.y))
+            console.log("Nans at ->> render()");
 
-        // ctx.clearRect(0, 0, canvas.width, canvas.height);
         this.wander();
         ctx.beginPath();
         ctx.arc(this.position.x, this.position.y, this.size, 0, Math.PI*2);
-        ctx.fillStyle = this.colour;
+        ctx.fillStyle = this.isColliding? "red" :  this.colour;
         ctx.fill();
         ctx.closePath();
-
-        if(this.isColliding){
-            ctx.font = "25px Monospace";
-            ctx.fillStyle = "#AAAAAA";
-            ctx.textAlign = "center";
-            ctx.fillText(this.choice, this.position.x, this.position.y);
-        }
     }
 
 }
