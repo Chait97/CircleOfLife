@@ -1,6 +1,7 @@
 import Point from "./Point";
+import { renderable } from "./SimObject";
 
-export default class Blob {
+export default class Blob implements renderable {
     points: any[];
     private _color: any;
     private _canvas: any;

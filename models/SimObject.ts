@@ -1,27 +1,53 @@
 import Point2D from "./Point2D";
 
- export default class SimObject {
+export interface renderable{
+    render: () => void;
+}
+
+export default class SimObject{
     static simObjIdMax = 0;
     static simObjMap = new Map();
     static distanceMap = new Map();
     size: number;
     position: Point2D;
     boundingRadius: number;
-    protected simObjId: number;
+    simObjId: number;
+    protected _velocity: Point2D;
+    protected speed: number
     isColliding: boolean;
     protected _canvas!: HTMLCanvasElement;
     ctx: any;
+    mass: number;
+
+    static reset() {
+        this.simObjMap.clear()
+        this.simObjMap = new Map();
+        this.simObjIdMax = 0;
+        this.distanceMap.clear();
+        this.distanceMap = new Map();
+    }
 
     constructor(size:number, position:Point2D, boundingRadius?:number) {
         this.size = size;
         this.position = position;
+        console.log(this.position, position)
         if(boundingRadius){
             this.boundingRadius = boundingRadius;
         } else this.boundingRadius = size;
         this.simObjId = SimObject.register(this);
         this.isColliding = false;
+        this.mass = this.size*this.size
+        console.log(this.position, position)
     };
 
+    set velocity(v){
+        this._velocity = v;
+        this.speed = v.magnitude;
+    }
+
+    get velocity(){
+        return this._velocity;
+    }
 
     static register(c:SimObject){
         this.simObjMap.set(this.simObjIdMax, c);
@@ -31,7 +57,6 @@ import Point2D from "./Point2D";
 
     static computeDistances(){
         // this compuptation occurs after every update before painting the screen
-
         let simObjIds = [...this.simObjMap.keys()];
 
         // track the ids of the simObjs which are in a colliding state for this update
@@ -61,10 +86,15 @@ import Point2D from "./Point2D";
                 let b = this.simObjMap.get(simObjIds[simObj_j]);
                 let dist = (a.position).distanceTo(b.position);
 
+                // if distance is less than size then the cells are INSIDE or overlapping
+                if(dist < a.size + b.size){
+                    let overlap = 1 -  dist / (a.size + b.size)
+                    // a.position.interpolate()
+
+                }
                 // if distance is less than size + threshold extra margin
                 if(dist <= a.boundingRadius + b.boundingRadius){
-                    a.onCollide();
-                    b.onCollide();
+                    a.onCollide(b);
                     collisions.add(a.simObjId);
                     collisions.add(b.simObjId);
                     // since A has collided with B, we don't care what else it's
@@ -87,12 +117,13 @@ import Point2D from "./Point2D";
         }
     }
 
-    onCollide(){
+    onCollide(that:SimObject):void{
         this.isColliding = true;
+        that.isColliding = true
         // console.log(this.simObjId, " is Colliding!")
     }
 
-    offCollide(){
+    offCollide():void{
         this.isColliding = false;
     }
 
