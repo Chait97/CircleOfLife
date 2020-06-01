@@ -1,5 +1,5 @@
 import TinyCell from "./models/TinyCell";
-import Point2D from "./models/Point2D";
+import Vector2D from "./models/Vector2D";
 import AudioController from "./models/AudioChannel";
 import World from "./models/World";
 import Blob from "./models/Blob";
@@ -22,12 +22,12 @@ document.querySelector('#scene').addEventListener('change', event => {
 scenes.push( () => {
     let world = new World(1);
 
-    // let audioChannel = new AudioController();
+    let audioChannel = new AudioController();
 
-    let nPoints = 10;
+    let nPoints = 20;
     let maxSize = 80;
     let minSize = 50;
-    let maxSpeed = 50;
+    let maxSpeed = 10;
 
 
     for (let i = 0; i < nPoints; i += 1) {
@@ -36,10 +36,10 @@ scenes.push( () => {
             world.center.clone().addRandom(world.dimension.y/2.5)
         );
         cell.colour = 'hsl(' + 360 * Math.random() + ', 50%, 50%)';
-        cell.velocity = (new Point2D).addRandom(maxSpeed);
-        cell.acceleration = 0;
+        cell.velocity = (new Vector2D).addRandom(maxSpeed);
+        cell.acceleration = 10;
         cell.canvas = world.canvas;
-        // audioChannel.subscribe(cell);
+        audioChannel.subscribe(cell);
     }
 
     let blob = new Blob;
@@ -48,12 +48,12 @@ scenes.push( () => {
     world.addBlob(blob);
     world.render();
 
-    // const startAudioCallback = async () => {
-    //     // await Tone.start()
-    //     console.log('audio is ready')
-    //     audioChannel.beat(2000);
-    // }
-    // document.querySelector('button').addEventListener('click', startAudioCallback);
+    const startAudioCallback = async () => {
+        // await Tone.start()
+        console.log('audio is ready')
+        audioChannel.beat(2000);
+    }
+    document.querySelector('button').addEventListener('click', startAudioCallback);
 })
 
 
@@ -69,7 +69,7 @@ scenes.push( () => {
         world.center.clone().updateCoordinates(200, undefined)
     );
     cellA.colour = 'hsl(' + 360 * Math.random() + ', 50%, 50%)';
-    cellA.velocity = new Point2D(20, 0)
+    cellA.velocity = new Vector2D(20, 0)
     cellA.acceleration = 0;
     cellA.canvas = world.canvas;
 
@@ -78,7 +78,7 @@ scenes.push( () => {
         world.center.clone().updateCoordinates(world.dimension.x-200, undefined)
     );
     cellB.colour = 'hsl(' + 360 * Math.random() + ', 50%, 50%)';
-    cellB.velocity = new Point2D(-20, 0)
+    cellB.velocity = new Vector2D(-20, 0)
     cellB.acceleration = 0;
     cellB.canvas = world.canvas;
 
@@ -91,7 +91,7 @@ scenes.push( () => {
 // *************************************************************************************************
 
 scenes.push( () => {
-    let world = new World(2);
+    let world = new World(3);
 
     let offset = 150;
 
@@ -100,7 +100,7 @@ scenes.push( () => {
         world.center.clone().updateCoordinates(200, world.center.y + offset/2)
     );
     cellA.colour = 'hsl(' + 360 * Math.random() + ', 50%, 50%)';
-    cellA.velocity = new Point2D(20, 0)
+    cellA.velocity = new Vector2D(20, 0)
     cellA.acceleration = 0;
     cellA.canvas = world.canvas;
 
@@ -109,7 +109,37 @@ scenes.push( () => {
         world.center.clone().updateCoordinates(world.dimension.x-200,world.center.y - offset/2 )
     );
     cellB.colour = 'hsl(' + 360 * Math.random() + ', 50%, 50%)';
-    cellB.velocity = new Point2D(-20, 0)
+    cellB.velocity = new Vector2D(-20, 0)
+    cellB.acceleration = 0;
+    cellB.canvas = world.canvas;
+
+    world.render();
+})
+
+// *************************************************************************************************
+// Scene 4: Random Scene
+// *************************************************************************************************
+
+scenes.push( () => {
+    let world = new World(4);
+
+    let offset = 150;
+
+    let cellA = new TinyCell(
+        100,
+        world.center.clone().updateCoordinates(200, world.center.y + offset/2)
+    );
+    cellA.colour = 'hsl(' + 360 * Math.random() + ', 50%, 50%)';
+    cellA.velocity = new Vector2D(2,0)
+    cellA.acceleration = 0;
+    cellA.canvas = world.canvas;
+
+    let cellB = new TinyCell(
+        100,
+        world.center.clone().updateCoordinates(world.dimension.x-200,world.center.y - offset/2 )
+    );
+    cellB.colour = 'hsl(' + 360 * Math.random() + ', 50%, 50%)';
+    cellB.velocity = new Vector2D(-2, 0)
     cellB.acceleration = 0;
     cellB.canvas = world.canvas;
 

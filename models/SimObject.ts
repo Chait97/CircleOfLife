@@ -1,6 +1,6 @@
-import Point2D from "./Point2D";
+import Vector2D from "./Vector2D";
 
-export interface renderable{
+export interface renderable  {
     render: () => void;
 }
 
@@ -9,10 +9,10 @@ export default class SimObject{
     static simObjMap = new Map();
     static distanceMap = new Map();
     size: number;
-    position: Point2D;
+    position: Vector2D;
     boundingRadius: number;
     simObjId: number;
-    protected _velocity: Point2D;
+    protected _velocity: Vector2D;
     protected speed: number
     isColliding: boolean;
     protected _canvas!: HTMLCanvasElement;
@@ -27,7 +27,7 @@ export default class SimObject{
         this.distanceMap = new Map();
     }
 
-    constructor(size:number, position:Point2D, boundingRadius?:number) {
+    constructor(size:number, position:Vector2D, boundingRadius?:number) {
         this.size = size;
         this.position = position;
         console.log(this.position, position)

@@ -1,12 +1,12 @@
 import SimObject, { renderable } from "./SimObject";
-import Point2D from "./Point2D";
+import Vector2D from "./Vector2D";
 import { AudioVisual } from "./AudioChannel";
 
-export default class TinyCell extends SimObject implements AudioVisual, renderable{
+export default class TinyCell extends SimObject implements AudioVisual, renderable {
     colour: string = "blue";
     acceleration!: number;
 
-    constructor(size: number, position: Point2D) {
+    constructor(size: number, position: Vector2D) {
         super(size, position)
     }
 
@@ -20,7 +20,7 @@ export default class TinyCell extends SimObject implements AudioVisual, renderab
     }
 
     wander(){
-        let change = new Point2D(this.velocity.x, this.velocity.y)
+        let change = new Vector2D(this.velocity.x, this.velocity.y)
         this.detectBounce(change)
         this.position.interpolate(this.position.x + change.x, this.position.y + change.y, 1);
         this.velocity.addRandomDirection(this.acceleration);
@@ -55,7 +55,7 @@ export default class TinyCell extends SimObject implements AudioVisual, renderab
         }
     }
 
-    detectBounce(change: Point2D){
+    detectBounce(change: Vector2D){
         if(isNaN(this.position.x) || isNaN(this.position.y))
             console.log("Nans at ->> detectBounce()");
         let x = this.position.x;

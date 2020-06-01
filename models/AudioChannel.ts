@@ -33,7 +33,6 @@ export default class AudioController {
     }
 
 
-
     beat(interval: number) {
         this.kick(interval)
         const f = () => {
