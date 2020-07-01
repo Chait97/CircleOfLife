@@ -1,7 +1,7 @@
 /**
  * Defines a 2D position.
  */
- export default class Point2D {
+ export default class Vector2D {
     _direction: Unit;
     _magnitude: number;
     y: number = 0;
@@ -39,7 +39,7 @@
         this._direction.update(this.x,this.y)
     }
 
-    distanceTo( c?:Point2D) {
+    distanceTo( c?:Vector2D) {
         if(isNaN(this.x) || isNaN(this.y))
             console.log("Nans at ->> distanceTo()");
         if(c){
@@ -52,7 +52,7 @@
     };
 
     clone() {
-    	return new Point2D(this.x, this.y);
+    	return new Vector2D(this.x, this.y);
     };
 
     interpolate( x:number, y:number, amp:number ) {
@@ -73,7 +73,7 @@
         return this;
     };
 
-    add(point:Point2D){
+    add(point:Vector2D){
         this.x += point.x;
         this.y += point.y;
         this.updateMagnitude();
@@ -126,7 +126,7 @@
         return this;
     }
     updatePoint( c ){
-        if (c instanceof Point2D){
+        if (c instanceof Vector2D){
             this.x = c.x;
             this.y = c.y;
             this.direction = c.direction;
@@ -164,7 +164,7 @@ class Unit {
     }
 
 
-    from(c:Point2D){
+    from(c:Vector2D){
         this.update(c.x, c.y)
         return this;
     }

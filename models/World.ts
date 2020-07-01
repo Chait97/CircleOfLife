@@ -1,4 +1,4 @@
-import Point2D from "./Point2D";
+import Vector2D from "./Vector2D";
 import SimObject, { renderable } from "./SimObject";
 import Blob from "./Blob";
 // import "./models/Point";
@@ -13,8 +13,8 @@ import AudioController from "./AudioChannel";
 
 export default class World {
     canvas!: HTMLCanvasElement;
-    dimension: Point2D;
-    center: Point2D;
+    dimension: Vector2D;
+    center: Vector2D;
     staticAssests: renderable[];
     isActive: boolean = false;
     static WorldMap = new Map();
@@ -22,8 +22,8 @@ export default class World {
 
     constructor(id: number) {
         this.worldId = id;
-        this.dimension = new Point2D(window.innerWidth, window.innerHeight);
-        this.center = new Point2D();
+        this.dimension = new Vector2D(window.innerWidth, window.innerHeight);
+        this.center = new Vector2D();
         this.staticAssests = [];
         World.WorldMap.set(id, this);
         this.initCanvas();
@@ -87,7 +87,7 @@ export default class World {
                     }
                 });
                 if (nearestPoint_1) {
-                    let strengthVector = new Point2D(oldMousePoint.x - e.clientX,oldMousePoint.y - e.clientY);
+                    let strengthVector = new Vector2D(oldMousePoint.x - e.clientX,oldMousePoint.y - e.clientY);
                     let strength = strengthVector.distanceTo() * 10;
                     if (strength > 100)
                         strength = 100;

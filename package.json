@@ -6,6 +6,7 @@
     "license": "MIT",
     "private": true,
     "dependencies": {
+        "mathjs": "^7.0.2",
         "tone": "^13.8.25",
         "ts-loader": "^7.0.5",
         "typescript": "^3.9.3",
