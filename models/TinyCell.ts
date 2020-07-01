@@ -1,6 +1,7 @@
 import SimObject, { renderable } from "./SimObject";
 import Vector2D from "./Vector2D";
 import { AudioVisual } from "./AudioChannel";
+import { dot, subtract, multiply, divide, norm} from "mathjs";
 
 export default class TinyCell extends SimObject implements AudioVisual, renderable {
     colour: string = "blue";
@@ -31,25 +32,31 @@ export default class TinyCell extends SimObject implements AudioVisual, renderab
         // IMPORTANT! : Make sure this function is commutative
         // i.e. running a.onCollide(b) should produce the same result as b.onCollide(a)
         if(!this.isColliding && !that.isColliding){     // make sure the cells weren't already in a colliding state prevously
-            let m_AB = this.mass + that.mass
+            let m_AB = this.mass + that.mass;
+            let Av = [this.velocity.x, this.velocity.y];
+            let Bv = [that.velocity.x, that.velocity.y];
 
-            let v = [
-                {Ai: this.velocity.x, Bi: that.velocity.x, Af: 0, Bf: 0},   // x velocities of A and B
-                {Ai: this.velocity.y, Bi: that.velocity.y, Af: 0, Bf: 0}    // y velocities of A and B
-            ]
+            let Ar = [this.position.x, this.position.y];
+            let Br = [that.position.x, that.position.y];
 
-            for (let v_ of v){
-                v_.Af = v_.Ai * (this.mass - that.mass) / m_AB
-                + 2 * v_.Bi * that.mass / m_AB
-                v_.Bf = v_.Bi * (that.mass - that.mass)  / m_AB
-                + 2 * v_.Ai * this.mass / m_AB
-            }
+            let u1dot = dot(subtract(Av, Bv), subtract(Ar, Br));
+            let u2dot = dot(subtract(Bv, Av), subtract(Br, Ar));
 
-            if(isNaN(this.position.x) || isNaN(this.position.y))
+            let n = norm(subtract(Ar, Br), 2) ** 2;
+
+            let u1m = 2 * that.mass / m_AB
+            let u2m = 2 * this.mass / m_AB
+
+            let u1 = subtract(Av, multiply(u1m, (divide(multiply(subtract(Ar, Br), u1dot), n))));
+            let u2 = subtract(Bv, multiply(u2m, (divide(multiply(subtract(Br, Ar), u2dot), n))))
+
+            if (isNaN(this.position.x) || isNaN(this.position.y))
                 console.log("Nans at ->> onCollide()");
 
-            this.velocity.updateCoordinates(v[0].Af, v[1].Af)
-            that.velocity.updateCoordinates(v[0].Bf, v[1].Bf)
+            this.velocity.updateCoordinates(u1[0], u1[1]);
+            console.log("onCollide()", u1[0], "and ", u1[1]);
+            that.velocity.updateCoordinates(u2[0], u2[1]);
+            console.log("onCollide()", u2[0], "and ", u2[1])
 
             super.onCollide(that);
         }
