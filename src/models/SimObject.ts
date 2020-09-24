@@ -18,6 +18,7 @@ export default class SimObject{
     protected _canvas!: HTMLCanvasElement;
     ctx: any;
     mass: number;
+    globalTime: number = 1;
 
     static reset() {
         this.simObjMap.clear()

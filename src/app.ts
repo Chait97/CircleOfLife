@@ -6,20 +6,32 @@ import Blob from "./models/Blob";
 import { randomInt } from "./utils";
 import "./tailwind.css";
 
-let scenes: { (): void; (): void; }[] = []
+let scenes: { (): World  }[] = []
 let newOffset: number = 0;
+
+let audioChannel = new AudioController();
+let currentWorld: World;
 
 document.querySelector('#scene')?.addEventListener('change', (event : any) => {
     let sceneId = Number(event.target.value) -1;
     let scene = scenes[sceneId]
-    if(scene instanceof Function)
-        scene()
+    if(scene instanceof World)
+        World.reset()
+        currentWorld = scene();
+        currentWorld.render()
 });
 
-document.querySelector('#offsetValue')?.addEventListener('change', (event: any) => {
-    newOffset = Number(event.target.value);
-    scenes[3]()
+document.querySelector('#timeFactor')?.addEventListener('change', (event: any) => {
+    let newTime = Number(event.target.value)/25;
+    currentWorld.setTime(newTime);
 });
+
+const startAudioCallback = async () => {
+    // await Tone.start()
+    console.log('audio is ready')
+    audioChannel.beat(2000);
+}
+document.querySelector('button')?.addEventListener('click', startAudioCallback);
 
 // *************************************************************************************************
 // Scene 1: Main
@@ -27,8 +39,6 @@ document.querySelector('#offsetValue')?.addEventListener('change', (event: any) 
 
 scenes.push( () => {
     let world = new World(1);
-
-    let audioChannel = new AudioController();
 
     let nPoints = 20;
     let maxSize = 80;
@@ -52,14 +62,8 @@ scenes.push( () => {
     blob.numPoints = 20;
     blob.radius = 300;
     world.addBlob(blob);
-    world.render();
 
-    const startAudioCallback = async () => {
-        // await Tone.start()
-        console.log('audio is ready')
-        audioChannel.beat(2000);
-    }
-    document.querySelector('button')?.addEventListener('click', startAudioCallback);
+    return world;
 })
 
 
@@ -88,7 +92,7 @@ scenes.push( () => {
     cellB.acceleration = 0;
     cellB.canvas = world.canvas;
 
-    world.render();
+    return world;
 })
 
 
@@ -119,7 +123,7 @@ scenes.push( () => {
     cellB.acceleration = 0;
     cellB.canvas = world.canvas;
 
-    world.render();
+    return world;
 })
 
 // *************************************************************************************************
@@ -149,8 +153,9 @@ scenes.push( () => {
     cellB.acceleration = 0;
     cellB.canvas = world.canvas;
 
-    world.render();
+    return world;
 })
 
 // by default run Scene 0: Main in the beginning
-scenes[0]();
+currentWorld = scenes[0]();
+currentWorld.render();

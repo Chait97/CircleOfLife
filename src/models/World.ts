@@ -6,11 +6,6 @@ import TinyCell from "./TinyCell";
 import * as Tone from "tone";
 import AudioController from "./AudioChannel";
 
-
-/**
- * @author Chaitanya Bhagwat
- */
-
 export default class World {
     canvas!: HTMLCanvasElement;
     dimension: Vector2D;
@@ -19,6 +14,7 @@ export default class World {
     isActive: boolean = false;
     static WorldMap = new Map();
     worldId: number;
+    globalTime: number = 1;
 
     constructor(id: number) {
         this.worldId = id;
@@ -27,6 +23,16 @@ export default class World {
         this.staticAssests = [];
         World.WorldMap.set(id, this);
         this.initCanvas();
+    }
+
+    setTime(time: number) {
+        if (this.globalTime != time) {
+            this.globalTime = time;
+            for(let [c_Id, cell] of SimObject.simObjMap){
+                cell.globalTime = time;
+            }
+        }
+        return this;
     }
 
     initCanvas(){

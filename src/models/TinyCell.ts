@@ -21,7 +21,7 @@ export default class TinyCell extends SimObject implements AudioVisual, renderab
     }
 
     wander(){
-        let change = new Vector2D(this.velocity.x, this.velocity.y)
+        let change = new Vector2D(this.globalTime * this.velocity.x, this.globalTime * this.velocity.y)
         this.detectBounce(change)
         this.position.interpolate(this.position.x + change.x, this.position.y + change.y, 1);
         this.velocity.addRandomDirection(this.acceleration);
