@@ -1,0 +1,22 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  h1 {
+    @apply text-2xl;
+  }
+  p {
+    @apply text-xl;
+  }
+}
+
+.toggle-checkbox:checked {
+  @apply: right-0 border-blue-500;
+  right: 0;
+  border-color: #4299E1;
+}
+.toggle-checkbox:checked + .toggle-label {
+  @apply: bg-blue-500;
+  background-color: #4299E1;
+}

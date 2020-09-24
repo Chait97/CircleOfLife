@@ -3,16 +3,22 @@ import Vector2D from "./models/Vector2D";
 import AudioController from "./models/AudioChannel";
 import World from "./models/World";
 import Blob from "./models/Blob";
-import { randomInt } from "./utils";
+import { randomInt } from "./src/utils";
 
 
 let scenes: { (): void; (): void; }[] = []
+let newOffset: number = 0;
 
-document.querySelector('#scene').addEventListener('change', event => {
+document.querySelector('#scene')?.addEventListener('change', (event : any) => {
     let sceneId = Number(event.target.value) -1;
     let scene = scenes[sceneId]
     if(scene instanceof Function)
         scene()
+});
+
+document.querySelector('#offsetValue')?.addEventListener('change', (event: any) => {
+    newOffset = Number(event.target.value);
+    scenes[3]()
 });
 
 // *************************************************************************************************
@@ -53,7 +59,7 @@ scenes.push( () => {
         console.log('audio is ready')
         audioChannel.beat(2000);
     }
-    document.querySelector('button').addEventListener('click', startAudioCallback);
+    document.querySelector('button')?.addEventListener('click', startAudioCallback);
 })
 
 
@@ -123,10 +129,10 @@ scenes.push( () => {
 scenes.push( () => {
     let world = new World(4);
 
-    let offset = 150;
+    let offset = newOffset;
 
     let cellA = new TinyCell(
-        100,
+        200,
         world.center.clone().updateCoordinates(200, world.center.y + offset/2)
     );
     cellA.colour = 'hsl(' + 360 * Math.random() + ', 50%, 50%)';
