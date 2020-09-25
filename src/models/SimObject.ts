@@ -39,6 +39,10 @@ export default class SimObject{
         this.mass = this.size*this.size
     };
 
+    resize(factor: number) {
+        this.size *= factor;
+    }
+
     set velocity(v){
         this._velocity = v;
         this.speed = v.magnitude;
