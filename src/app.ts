@@ -5,6 +5,8 @@ import World from "./models/World";
 import Blob from "./models/Blob";
 import { randomInt } from "./utils";
 import "./tailwind.css";
+import "./main.css";
+import * as Tone from "tone";
 
 let scenes: { (): World  }[] = []
 let newOffset: number = 0;
@@ -27,20 +29,19 @@ document.querySelector('#timeFactor')?.addEventListener('change', (event: any) =
 });
 
 const startAudioCallback = async () => {
-    // await Tone.start()
-    console.log('audio is ready')
+    await Tone.start()
     audioChannel.beat(2000);
 }
 document.querySelector('button')?.addEventListener('click', startAudioCallback);
 
 // *************************************************************************************************
-// Scene 1: Main
+// Scene 0: Main
 // *************************************************************************************************
 
 scenes.push( () => {
     let world = new World(1);
 
-    let nPoints = 20;
+    let nPoints = 80;
     let maxSize = 80;
     let minSize = 50;
     let maxSpeed = 10;
@@ -68,36 +69,46 @@ scenes.push( () => {
 
 
 // *************************************************************************************************
-// Scene 2: Head On Collision
+// Scene 1: Chaos 
 // *************************************************************************************************
 
 scenes.push( () => {
     let world = new World(2);
 
-    let cellA = new TinyCell(
-        100*world.scale,
-        world.center.clone().updateCoordinates(200, undefined)
-    );
-    cellA.colour = 'hsl(' + 360 * Math.random() + ', 50%, 50%)';
-    cellA.velocity = new Vector2D(20, 0)
-    cellA.acceleration = 0;
-    cellA.canvas = world.canvas;
+    let nPoints = 20;
+    let maxSize = 60;
+    let minSize = 10;
+    let maxSpeed = 10;
 
-    let cellB = new TinyCell(
-        100*world.scale,
-        world.center.clone().updateCoordinates(world.canvas.width-200, undefined)
-    );
-    cellB.colour = 'hsl(' + 360 * Math.random() + ', 50%, 50%)';
-    cellB.velocity = new Vector2D(-20, 0)
-    cellB.acceleration = 0;
-    cellB.canvas = world.canvas;
+    for (let i = 0; i < nPoints; i += 1) {
+        let cell = new TinyCell(
+            (randomInt(maxSize - minSize) + minSize)*world.scale,
+            world.center.clone().addRandom(world.canvas.height/2.5), false
+        );
+        cell.colour = 'hsl(' + 360 * Math.random() + ', 50%, 50%)';
+        cell.velocity = (new Vector2D).addRandom(maxSpeed);
+        cell.acceleration = 0;
+        cell.canvas = world.canvas;
+        audioChannel.subscribe(cell);
+    }
 
+    world.postRender = (context) => {
+        if (Math.random() < 0.85) return;
+        let cell = new TinyCell(
+            (randomInt(maxSize - minSize) + minSize) * world.scale,
+            world.center.clone().addRandom(world.canvas.height/4), false
+        );
+        cell.colour = 'hsl(' + 360 * Math.random() + ', 50%, 50%)';
+        cell.velocity = (new Vector2D).addRandom(maxSpeed);
+        cell.acceleration = 0;
+        cell.canvas = context.canvas;
+    }
     return world;
 })
 
 
 // *************************************************************************************************
-// Scene 3: Offset Collision
+// Scene 2: Offset Collision
 // *************************************************************************************************
 
 scenes.push( () => {
@@ -127,7 +138,7 @@ scenes.push( () => {
 })
 
 // *************************************************************************************************
-// Scene 4: Random Scene
+// Scene 3: Random Scene
 // *************************************************************************************************
 
 scenes.push( () => {
@@ -145,7 +156,7 @@ scenes.push( () => {
     cellA.canvas = world.canvas;
 
     let cellB = new TinyCell(
-        100*world.scale,
+        500*world.scale,
         world.center.clone().updateCoordinates(world.canvas.width-200,world.center.y - offset/2 )
     );
     cellB.colour = 'hsl(' + 360 * Math.random() + ', 50%, 50%)';
@@ -156,6 +167,6 @@ scenes.push( () => {
     return world;
 })
 
-// by default run Scene 0: Main in the beginning
-currentWorld = scenes[0]();
+// by default run Scene <scene-number> in the beginning
+currentWorld = scenes[1]();
 currentWorld.render();

@@ -6,9 +6,11 @@ import { dot, subtract, multiply, divide, norm} from "mathjs";
 export default class TinyCell extends SimObject implements AudioVisual, renderable {
     colour: string = "blue";
     acceleration!: number;
+    edgeAction: (arg0: Vector2D) => void;
 
-    constructor(size: number, position: Vector2D) {
-        super(size, position)
+    constructor(size: number, position: Vector2D, isBouncing?: boolean) {
+        super(size, position, isBouncing)
+        this.edgeAction = isBouncing ? this.detectBounce : this.wanderOffEdge;
     }
 
     beatResponse(){
@@ -22,7 +24,7 @@ export default class TinyCell extends SimObject implements AudioVisual, renderab
 
     wander(){
         let change = new Vector2D(this.globalTime * this.velocity.x, this.globalTime * this.velocity.y)
-        this.detectBounce(change)
+        this.edgeAction(change)
         this.position.interpolate(this.position.x + change.x, this.position.y + change.y, 1);
         this.velocity.addRandomDirection(this.acceleration);
     }
@@ -39,9 +41,12 @@ export default class TinyCell extends SimObject implements AudioVisual, renderab
             let Ar = [this.position.x, this.position.y];
             let Br = [that.position.x, that.position.y];
 
+            // @ts-ignore
             let u1dot = dot(subtract(Av, Bv), subtract(Ar, Br));
+            // @ts-ignore
             let u2dot = dot(subtract(Bv, Av), subtract(Br, Ar));
 
+            // @ts-ignore
             let n = norm(subtract(Ar, Br), 2) ** 2;
 
             let u1m = 2 * that.mass / m_AB
@@ -60,21 +65,34 @@ export default class TinyCell extends SimObject implements AudioVisual, renderab
     }
 
     detectBounce(change: Vector2D){
-        if(isNaN(this.position.x) || isNaN(this.position.y))
-            console.log("Nans at ->> detectBounce()");
         let x = this.position.x;
         let y = this.position.y;
         let canvas = this.canvas;
+        let bounceMargin = 5;
 
-        if(x + change.x > canvas.width-this.size || x + change.x < this.size) {
+        // bouncing bounceMargin pixels early can resolve some objects getting stuck on the edges
+        if(x + change.x > canvas.width-this.size - bounceMargin || x + change.x < this.size + bounceMargin) {
             change.x = -change.x;
             this.velocity.reverseX()
         }
-        if(y + change.y > canvas.height-this.size || y + change.y < this.size) {
+        if(y + change.y > canvas.height-this.size - bounceMargin || y + change.y < this.size + bounceMargin) {
             change.y = -change.y;
             this.velocity.reverseY();
         }
     }
+
+    wanderOffEdge(change: Vector2D){
+        let x = this.position.x;
+        let y = this.position.y;
+        let canvas = this.canvas;
+
+        // equations to detect going off screen
+        if ((x + change.x > canvas.width + this.size || x + change.x <  - this.size) 
+            || (y + change.y > canvas.height-this.size || y + change.y < - this.size)) {
+                SimObject.kill(this);
+        }
+    }
+
 
     render() {
         let ctx = this.ctx;
@@ -84,7 +102,7 @@ export default class TinyCell extends SimObject implements AudioVisual, renderab
         this.wander();
         ctx.beginPath();
         ctx.arc(this.position.x, this.position.y, this.size, 0, Math.PI*2);
-        ctx.fillStyle = this.isColliding? "red" :  this.colour;
+        ctx.fillStyle = this.colour;
         ctx.fill();
         ctx.closePath();
     }

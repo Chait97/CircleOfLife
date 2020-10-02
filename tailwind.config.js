@@ -1,9 +1,15 @@
 // tailwind.config.js
 module.exports = {
-    purge: ['./dist/**/*.html'],
-    theme: {
-      extend: {},
+    future: {
+      removeDeprecatedGapUtilities: true,
+      purgeLayersByDefault: true,
+      
     },
+    purge:{
+      preserveHtmlElements: false,
+      content: ['./src/**/*.html'],
+    },
+    theme: {},
     variants: {},
     plugins: [],
   }

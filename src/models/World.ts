@@ -15,9 +15,11 @@ export default class World {
     worldId: number;
     globalTime: number = 1;
     scale: number = 1;
+    postRender: (arg0: World, arg1?: any) => void;
 
     constructor(id: number) {
         World.reset();
+        this.postRender = () => {};
         this.worldId = id;
         this.center = new Vector2D();
         this.staticAssests = [];
@@ -133,8 +135,9 @@ export default class World {
                     cell.render()
                 }
                 SimObject.computeDistances();
+                this.postRender(this, null); // TODO: second paramater: global time
                 if(this.isActive)
-                requestAnimationFrame(renderFrame);
+                    requestAnimationFrame(renderFrame);
             };
             renderFrame();
         }
