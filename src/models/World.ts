@@ -8,17 +8,19 @@ import AudioController from "./AudioChannel";
 
 export default class World {
     canvas!: HTMLCanvasElement;
-    dimension: Vector2D;
     center: Vector2D;
     staticAssests: renderable[];
     isActive: boolean = false;
     static WorldMap = new Map();
     worldId: number;
     globalTime: number = 1;
+    scale: number = 1;
+    postRender: (arg0: World, arg1?: any) => void;
 
     constructor(id: number) {
+        World.reset();
+        this.postRender = () => {};
         this.worldId = id;
-        this.dimension = new Vector2D(window.innerWidth, window.innerHeight);
         this.center = new Vector2D();
         this.staticAssests = [];
         World.WorldMap.set(id, this);
@@ -36,7 +38,6 @@ export default class World {
     }
 
     initCanvas(){
-        World.reset();
         this.canvas = document.createElement('canvas');
         this.canvas.setAttribute('touch-action', 'none');
         document.body.appendChild(this.canvas);
@@ -45,7 +46,7 @@ export default class World {
     }
 
     addEventListeners(mouseMove: { (e: any): void; (this: Window, ev: PointerEvent): any; }) {
-        window.addEventListener('resize', this.onWindowResize, false);
+        window.addEventListener('resize', this.onWindowResize.bind(this), false);
         window.addEventListener('pointermove', mouseMove);
     };
 
@@ -53,11 +54,16 @@ export default class World {
         // The world dimensions
         let x = window.innerWidth;
         let y = window.innerHeight;
-        this.dimension.updateCoordinates(x, y);
         this.center.updateCoordinates(x / 2, y / 2).round(Math.floor);
         // Resize the canvas
         this.canvas.width = x;
         this.canvas.height = y;
+        let newScale = Math.max(x,y) / 2000;
+        console.log(newScale/this.scale);
+        for(let [c_Id, cell] of SimObject.simObjMap){
+            cell.resize(newScale/this.scale);
+        } 
+        this.scale = newScale;
     };
 
     addBlob(blob: Blob) {
@@ -129,8 +135,9 @@ export default class World {
                     cell.render()
                 }
                 SimObject.computeDistances();
+                this.postRender(this, null); // TODO: second paramater: global time
                 if(this.isActive)
-                requestAnimationFrame(renderFrame);
+                    requestAnimationFrame(renderFrame);
             };
             renderFrame();
         }

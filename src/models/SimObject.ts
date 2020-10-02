@@ -19,6 +19,7 @@ export default class SimObject{
     ctx: any;
     mass: number;
     globalTime: number = 1;
+    isBouncing: boolean = true;
 
     static reset() {
         this.simObjMap.clear()
@@ -28,16 +29,21 @@ export default class SimObject{
         this.distanceMap = new Map();
     }
 
-    constructor(size:number, position:Vector2D, boundingRadius?:number) {
+    constructor(size:number, position:Vector2D, isBouncing: boolean = true, boundingRadius?:number ) {
         this.size = size;
         this.position = position;
         if(boundingRadius){
             this.boundingRadius = boundingRadius;
         } else this.boundingRadius = size;
+        this.isBouncing = isBouncing;
         this.simObjId = SimObject.register(this);
         this.isColliding = false;
         this.mass = this.size*this.size
     };
+
+    resize(factor: number) {
+        this.size *= factor;
+    }
 
     set velocity(v){
         this._velocity = v;
@@ -52,6 +58,10 @@ export default class SimObject{
         this.simObjMap.set(this.simObjIdMax, c);
         this.simObjIdMax += 1;
         return this.simObjIdMax - 1;
+    }
+
+    static kill(c:SimObject){
+        return this.simObjMap.delete(c.simObjId);
     }
 
     static computeDistances(){
