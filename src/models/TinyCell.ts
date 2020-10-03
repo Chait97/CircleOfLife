@@ -2,24 +2,29 @@ import SimObject, { renderable } from "./SimObject";
 import Vector2D from "./Vector2D";
 import { AudioVisual } from "./AudioChannel";
 import { dot, subtract, multiply, divide, norm} from "mathjs";
+import { bezierCell }  from "../utils/shapes";
+import revolveAroundRandomly from "../utils/random";
 
 export default class TinyCell extends SimObject implements AudioVisual, renderable {
     colour: string = "blue";
     acceleration!: number;
     edgeAction: (arg0: Vector2D) => void;
+    _shapeFactors: [number, number] = [3.5, 0.25]
+    bezierCell: bezierCell
+    dotRing: number
 
-    constructor(size: number, position: Vector2D, isBouncing?: boolean) {
+    constructor(size: number, position: Vector2D, isBouncing = true) {
         super(size, position, isBouncing)
         this.edgeAction = isBouncing ? this.detectBounce : this.wanderOffEdge;
     }
 
-    beatResponse(){
-        let originalSize = this.size
-        let myVar = setInterval(() => this.size *= 0.95, 20);
-        setTimeout(() => {
-            clearTimeout(myVar)
-            this.size = originalSize
-        }, 200);
+    init(callback?: () => {} ) {
+        this.bezierCell = new bezierCell(...this.position.xy(), this.size, 7);
+        if (callback) { callback(); }
+    }
+
+    bassResponse(){
+        this.dotRing = 1;
     }
 
     wander(){
@@ -93,16 +98,35 @@ export default class TinyCell extends SimObject implements AudioVisual, renderab
         }
     }
 
+    getShapeFactors(): [number, number] {
+        return revolveAroundRandomly(this._shapeFactors);
+    }
 
-    render() {
+    render(time: number) {
+        let f1 = Math.sin(time / 400);
+        let currentSize = this.size  * (0.9 + 0.1 * f1);
         let ctx = this.ctx;
-        if(isNaN(this.position.x) || isNaN(this.position.y))
-            console.log("Nans at ->> render()");
-
         this.wander();
         ctx.beginPath();
-        ctx.arc(this.position.x, this.position.y, this.size, 0, Math.PI*2);
         ctx.fillStyle = this.colour;
+        ctx.strokeStyle = this.colour;
+
+        if (this.dotRing > 0) {
+            ctx.globalAlpha = this.dotRing/1.5;
+            let size = currentSize * (1 +  0.5* this.dotRing);
+            ctx.arc(this.position.x, this.position.y, size, 0, Math.PI*2);
+            ctx.stroke();ctx.closePath();ctx.beginPath();
+            ctx.arc(this.position.x, this.position.y, size*1.2, 0, Math.PI*2);
+            ctx.stroke();ctx.closePath();ctx.beginPath();
+            ctx.arc(this.position.x, this.position.y, size*1.44, 0, Math.PI*2);
+            ctx.stroke();ctx.closePath();ctx.beginPath();
+            this.dotRing = this.dotRing < 0.1 ? 0 : this.dotRing/1.05
+        }
+        ctx.globalAlpha = 1;
+
+        // ctx.arc(this.position.x, this.position.y, currentSize, 0, Math.PI*2);
+        this.bezierCell?.draw(ctx, time, this.position, currentSize);
+
         ctx.fill();
         ctx.closePath();
     }

@@ -1,7 +1,7 @@
 import Vector2D from "./Vector2D";
 
 export interface renderable  {
-    render: () => void;
+    render: (time?: number) => void;
 }
 
 export default class SimObject{
@@ -128,7 +128,6 @@ export default class SimObject{
     onCollide(that:SimObject):void{
         this.isColliding = true;
         that.isColliding = true
-        // console.log(this.simObjId, " is Colliding!")
     }
 
     offCollide():void{

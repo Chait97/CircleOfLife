@@ -14,6 +14,10 @@
         // console.log(this, x, y)
     };
 
+    xy(): [number, number] {
+        return [this.x, this.y];
+    }
+
     get magnitude(){
         return this._magnitude;
     }
