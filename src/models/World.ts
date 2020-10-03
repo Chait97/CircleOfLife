@@ -9,20 +9,21 @@ import AudioController from "./AudioChannel";
 export default class World {
     canvas!: HTMLCanvasElement;
     center: Vector2D;
-    staticAssests: renderable[];
+    staticAssests: Map<number, renderable>;
     isActive: boolean = false;
     static WorldMap = new Map();
     worldId: number;
     globalTime: number = 1;
     scale: number = 1;
     postRender: (arg0: World, arg1?: any) => void;
+    t0: number;
 
     constructor(id: number) {
         World.reset();
         this.postRender = () => {};
         this.worldId = id;
         this.center = new Vector2D();
-        this.staticAssests = [];
+        this.staticAssests = new Map;
         World.WorldMap.set(id, this);
         this.initCanvas();
     }
@@ -43,6 +44,7 @@ export default class World {
         document.body.appendChild(this.canvas);
         // Force an initial layout
         this.onWindowResize();
+        this.t0 = performance.now()
     }
 
     addEventListeners(mouseMove: { (e: any): void; (this: Window, ev: PointerEvent): any; }) {
@@ -66,8 +68,12 @@ export default class World {
         this.scale = newScale;
     };
 
+    addStatic(a: renderable) {
+        this.staticAssests.set(this.staticAssests.size, a);
+    }
+
     addBlob(blob: Blob) {
-        this.staticAssests.push(blob);
+        this.addStatic(blob);
         let oldMousePoint = { x: 0, y: 0 };
         let hover = false;
         let mouseMove = function(e: { clientX: number; clientY: number; }) {
@@ -129,10 +135,10 @@ export default class World {
             let renderFrame = () => {
                 ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
                 for (let st of this.staticAssests) {
-                    st.render();
+                    st[1].render(Date.now());
                 }
                 for(let [c_Id, cell] of SimObject.simObjMap){
-                    cell.render()
+                    cell.render(Date.now())
                 }
                 SimObject.computeDistances();
                 this.postRender(this, null); // TODO: second paramater: global time

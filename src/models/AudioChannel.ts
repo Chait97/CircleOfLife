@@ -1,7 +1,7 @@
 import * as Tone from "tone";
 
 export interface AudioVisual {
-    beatResponse:() => void;
+    beatResponse?:() => void;
     bassResponse?:() => void;
     trebleResponse?:() => void;
 }
@@ -11,10 +11,46 @@ export default class AudioController {
     elements:AudioVisual[];
     kick: any;
     synth: any;
+    arp: any;
+    arpFilter: any;
 
     constructor(){
         this.elements = []
+         this.kick = new Tone.MembraneSynth({
+            pitchDecay: 0.05,
+            octaves: 5,
+            oscillator: {
+              type: "sine"
+            },
+            envelope: {
+              attack: 0.001,
+              decay: 0.4,
+              sustain: 0.01,
+              release: 1.4,
+              attackCurve: "exponential"
+            }
+          })
+
+        const filter = new Tone.Filter(200, 'lowpass').toDestination();
+        // this.synth = new Tone.PolySynth(Tone.Synth);
+        this.synth = this.fmSynth();
+        this.kick.connect(filter);
         
+        this.arp = new Tone.MonoSynth({
+            oscillator: {
+                type: "square"
+            },
+            envelope: {
+                attack: 0.1
+            }
+        })
+        this.arp.volume.value = -6;
+        this.arpFilter = new Tone.Filter(1000, 'lowpass').toDestination();
+
+        window.addEventListener("mousemove", (e) => {
+            this.arpFilter.frequency.rampTo(1000 * (window.outerHeight - e.clientY)/ window.outerHeight, 1);
+        })
+        this.arp.connect(this.arpFilter);
     }
 
     subscribe(Cell:AudioVisual){
@@ -22,36 +58,104 @@ export default class AudioController {
     }
 
     kickPlay(time){
-        var kickPart = new Tone.Loop((time) => {
-        	this.kick.triggerAttackRelease('C2', '8n', time);
-        }, '2n').start(0);
-        Tone.Transport.start();
+        new Tone.Loop((time) => {
+            this.kick.triggerAttackRelease('C2', '8n', time);
+            this.bassResponse();
+        }, '4n').start(0);
     }
     
     synthPlay(time){
-        let synth = this.synth;
-        const now = Tone.now()
-        synth.triggerAttack("D4", now);
-        synth.triggerAttack("F4", now + 0.5);
-        synth.triggerAttack("A4", now + 1);
-        synth.triggerAttack("C5", now + 1.5);
-        synth.triggerAttack("E5", now + 2);
-        synth.triggerRelease(["D4", "F4", "A4", "C5", "E5"], now + 4);
+        this.synth.triggerAttackRelease("G1", '2n');
+    }
+
+    arpPlay(time) {
+        let pattern = new Tone.Pattern((time, note) => {
+            this.arp.triggerAttackRelease(note, 0.125);
+        }, ["C3", "G3", "E4", "A3", "B4"])
+        pattern.playbackRate = 4;
+        pattern.start(0);
     }
 
 
     beat(interval: number) {
-        this.kick = new Tone.MembraneSynth({
-            'envelope' : {
-                'sustain' : 0,
-                'attack' : 0.02,
-                'decay' : 0.8
+        this.kickPlay(interval)
+        this.synthPlay(interval)
+        this.arpPlay(interval);
+        Tone.Transport.start();
+    }
+
+    bassResponse() {
+        this.elements.forEach(e => e.bassResponse())
+    }
+
+    fmArp() {
+        var fmSynth = new Tone.FMSynth({
+            harmonicity: 5,
+            modulationIndex: 5,
+            detune: 0, //alter, 100 per half step
+            oscillator: {
+              type: "fatsawtooth"
             },
-            'octaves' : 10
-        }).toDestination();
-        this.synth = new Tone.PolySynth(Tone.Synth).toDestination();
-        this.kickPlay(interval);
-        this.synthPlay(interval);
+            envelope: {
+              attack: 0.1,
+              decay: 5,
+              sustain: 1,
+              release: 1
+            },
+            modulation: {
+              type: "sine"
+            },
+            modulationEnvelope: {
+              attack: 0.5,
+              decay: 10,
+              sustain: 0.7,
+              release: 1
+            }
+          });
+          
+          // var waveform = new Tone.Waveform(1024);
+          // // waveform.connect(fmSynth);
+          // var waveValue = waveform.getValue();
+          // console.log(waveValue);
+          
+          fmSynth.toDestination();
+        //   let value = fmSynth.envelope.value
+        return fmSynth;
+    }
+
+    fmSynth () {
+        var fmSynth = new Tone.FMSynth({
+            harmonicity: 5,
+            modulationIndex: 20,
+            detune: 0, //alter, 100 per half step
+            oscillator: {
+              type: "sine"
+            },
+            envelope: {
+              attack: 0.1,
+              decay: 5,
+              sustain: 1,
+              release: 1
+            },
+            modulation: {
+              type: "square"
+            },
+            modulationEnvelope: {
+              attack: 0.5,
+              decay: 10,
+              sustain: 0.7,
+              release: 1
+            }
+          });
+          
+          // var waveform = new Tone.Waveform(1024);
+          // // waveform.connect(fmSynth);
+          // var waveValue = waveform.getValue();
+          // console.log(waveValue);
+          
+          fmSynth.toDestination();
+        //   let value = fmSynth.envelope.value
+        return fmSynth;
     }
 
 }

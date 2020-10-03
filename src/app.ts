@@ -3,6 +3,7 @@ import Vector2D from "./models/Vector2D";
 import AudioController from "./models/AudioChannel";
 import World from "./models/World";
 import Blob from "./models/Blob";
+import Fluid from "./models/Fluid"
 import { randomInt } from "./utils";
 import "./tailwind.css";
 import "./main.css";
@@ -57,6 +58,7 @@ scenes.push( () => {
         cell.acceleration = 10;
         cell.canvas = world.canvas;
         audioChannel.subscribe(cell);
+        cell.init();
     }
 
     let blob = new Blob;
@@ -90,6 +92,11 @@ scenes.push( () => {
         cell.acceleration = 0;
         cell.canvas = world.canvas;
         audioChannel.subscribe(cell);
+        cell.init();
+        const f = new Fluid;
+        f.canvas = world.canvas;
+        f.center = world.center.clone()
+        world.addStatic(f)
     }
 
     world.postRender = (context) => {
@@ -102,6 +109,8 @@ scenes.push( () => {
         cell.velocity = (new Vector2D).addRandom(maxSpeed);
         cell.acceleration = 0;
         cell.canvas = context.canvas;
+        audioChannel.subscribe(cell);
+        cell.init();
     }
     return world;
 })
@@ -134,6 +143,8 @@ scenes.push( () => {
     cellB.acceleration = 0;
     cellB.canvas = world.canvas;
 
+    cellA.init();
+    cellB.init();
     return world;
 })
 
@@ -144,26 +155,30 @@ scenes.push( () => {
 scenes.push( () => {
     let world = new World(4);
 
-    let offset = newOffset;
+    let offset = 1000;
 
     let cellA = new TinyCell(
-        200*world.scale,
-        world.center.clone().updateCoordinates(200, world.center.y + offset/2)
+        320*world.scale,
+        world.center.clone()
     );
     cellA.colour = 'hsl(' + 360 * Math.random() + ', 50%, 50%)';
-    cellA.velocity = new Vector2D(2,0)
+    cellA.velocity = new Vector2D(0,10)
     cellA.acceleration = 0;
     cellA.canvas = world.canvas;
 
     let cellB = new TinyCell(
-        500*world.scale,
+        80*world.scale,
         world.center.clone().updateCoordinates(world.canvas.width-200,world.center.y - offset/2 )
     );
     cellB.colour = 'hsl(' + 360 * Math.random() + ', 50%, 50%)';
-    cellB.velocity = new Vector2D(-2, 0)
+    cellB.velocity = new Vector2D(1, 0)
     cellB.acceleration = 0;
     cellB.canvas = world.canvas;
-
+    audioChannel.subscribe(cellA);
+    audioChannel.subscribe(cellB);
+    cellA.init();
+    cellB.init();
+ 
     return world;
 })
 
